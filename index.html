@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dump Truck Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid black; padding: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="simulation-container">
+        <h1>Dump Truck Simulation</h1>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <h2>Configure Simulation</h2>
+            <div class="config-row">
+                <button class="button" onclick="location.href='manualsimulation.html'">Manual Simulation</button>
+                <div class="config-item">
+                    <label for="numTrucks">Number of Trucks:</label>
+                    <input type="number" id="numTrucks" min="1" max="20" value="9" />
+                    <button onclick="createInputFields()">Generate Truck Inputs</button>
+                </div>
+
+                <div class="config-item">
+                    <label for="numScales">Number of Scales:</label>
+                    <input type="number" id="numScales" min="1" max="5" value="1" />
+                    <button onclick="createScales()">Generate Scales</button>
+                </div>
+
+                <div class="config-item">
+                    <label for="numLoaders">Number of Loaders:</label>
+                    <input type="number" id="numLoaders" min="1" max="5" value="2" />
+                    <button onclick="createLoaders()">Generate Loaders</button>
+                </div>
+            </div>
+
+            <h2>Set Times for Trucks (in Seconds)</h2>
+            <table id="inputTable" class="input-table">
+                <thead>
+                    <tr>
+                        <th>Truck</th>
+                        <th>Loading Time (seconds)</th>
+                        <th>Weighing Time (seconds)</th>
+                        <th>Travel Time (seconds)</th>
+                    </tr>
+                </thead>
+                <tbody id="inputFields">
+                    <!-- Input fields for each truck's times will be generated here -->
+                </tbody>
+            </table>
+            <div class="button-container">
+                <button onclick="initializeSimulation()">Start Simulation</button>
+            </div>
+        </div>
+
+        <!-- Loading Queues and Loaders -->
+        <div class="queues-horizontal">
+            <div class="queue-container">
+                <h3>Loading Queue</h3>
+                <div id="loadingQueue" class="queue" aria-live="polite"></div>
+            </div>
+
+            <div class="loaders-container" id="loadersContainer">
+                <h3>Loaders</h3>
+                <div id="loaders" class="queues-horizontal" aria-live="polite"></div>
+            </div>
+        </div>
+
+        <!-- Weighing and Travel Queues on a separate line -->
+        <div class="queues-horizontal second-line">
+            <div class="queue-container">
+                <h3>Weighing Queue</h3>
+                <div id="weighingQueue" class="queue" aria-live="polite"></div>
+            </div>
+        
+            <div class="scales-container" id="scalesContainer">
+                <h3>Scales</h3>
+                <div id="scales" class="queues-horizontal" aria-live="polite"></div>
+            </div>
+        </div>
+        
+        <!-- Completed Queue -->
+        <div class="queues-horizontal">
+            <div class="queue-container">
+                <h3>Traveling Trucks</h3>
+                <div id="travelQueue" class="queue" aria-live="polite"></div>
+            </div>
+            <div class="queue-container">
+                <h3>Completed Trucks</h3>
+                <div id="completedQueue" class="queue" aria-live="polite"></div>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

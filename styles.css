@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.simulation-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+input[type="number"] {
+    width: 80px;
+    padding: 5px;
+    margin: 5px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.input-section {
+    margin-bottom: 30px;
+}
+
+.input-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.input-table th, .input-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.input-table th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Horizontal layout for simulation */
+.queues-horizontal {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 10px;
+    border: 2px solid #ccc;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+}
+
+/* Second line for weighing and travel queues */
+.queues-horizontal.second-line {
+    margin-top: 40px; /* Add some space between the two lines */
+}
+
+.queue-container {
+    flex: 1;
+    text-align: center;
+}
+
+/* Loader size adjustment: half-height and large width */
+.loader-half {
+    width: 500px;
+    height: 75px; /* Half height */
+    margin: 0 20px;
+}
+
+/* Increase container sizes */
+.queue, .process {
+    margin: 20px;
+    padding: 30px;
+    border: 3px solid #ccc;
+    background-color: #fff;
+    width: 250px;
+    height: 150px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Loader and scale colors */
+.loader {
+    background-color: green; /* Free state */
+    transition: background-color 0.5s;
+}
+
+.loader.busy {
+    background-color: red; /* Busy state */
+}
+
+.scale {
+    background-color: green; /* Free state */
+    transition: background-color 0.5s;
+}
+
+.scale.busy {
+    background-color: red; /* Busy state */
+}
+
+h3 {
+    margin-bottom: 10px;
+}
+
+/* Truck box styles */
+.truck {
+    margin: 5px;
+    padding: 10px;
+    background-color: #3498db; /* Blue color for trucks */
+    color: white;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+/* Traveling truck style */
+.truck.traveling {
+    background-color: #e67e22; /* Orange color for traveling trucks */
+    border: 2px solid #d35400; /* Darker border for contrast */
+}
+
+/* Completed queue container */
+#completedQueue {
+    background-color: #f0f8ff; /* Light blue for completed trucks */
+}
+

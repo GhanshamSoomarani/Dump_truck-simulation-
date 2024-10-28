@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Simulation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            margin-right: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .truck-times {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .truck-times div {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .simulation-control {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .simulation-control div {
+            margin-right: 15px;
+        }
+
+        #simulationBody {
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .simulation-control {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            button {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Dump Truck Simulation Output</h1>
+
+    <div class="simulation-control">
+        <div>
+            <label for="numTrucks">Number of Trucks:</label>
+            <input type="number" id="numTrucks" value="3" min="1">
+            <button id="setTrucksButton">Set Trucks</button>
+        </div>
+
+        <div>
+            <label for="numLoaders">Number of Loaders:</label>
+            <input type="number" id="numLoaders" value="2" min="1">
+            
+            <label for="numScales">Number of Scales:</label>
+            <input type="number" id="numScales" value="1" min="1">
+        </div>
+
+        <div>
+            <button id="startButton">Start Simulation</button>
+        </div>
+    </div>
+
+    <div id="truckTimesContainer" class="truck-times"></div>
+
+    <div>
+        <strong>Loader Busy Time:</strong> <span id="loaderBusyTime">0</span> units
+    </div>
+    <div>
+        <strong>Scale Busy Time:</strong> <span id="scaleBusyTime">0</span> units
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Clock</th>
+                <th>Event</th>
+                <th>Loader Queue</th>
+                <th>Busy Loaders</th>
+                <th>Weighing Queue</th>
+                <th>Truck on Scale</th>
+                <th>Busy Loaders Count</th>
+                <th>Busy Scale Count</th>
+                <th>Future Event List</th>
+            </tr>
+        </thead>
+        <tbody id="simulationBody">
+        </tbody>
+    </table>
+
+    <script>
+        let clock = 0;
+        let loaderQueue = [];
+        let loaderBusy = [];
+        let weighingQueue = [];
+        let weighingTruck = null;
+        let futureEventList = [];
+        let BL = 0;
+        let BS = 0;
+        let numLoaders = 2;
+        let numScales = 1;
+
+        let truckDetails = {};
+
+        let loaderBusyTime = 0;  // Total time loaders are busy
+        let scaleBusyTime = 0;   // Total time scale is busy
+
+        document.getElementById('setTrucksButton').onclick = function() {
+            const numTrucks = parseInt(document.getElementById('numTrucks').value);
+            const container = document.getElementById('truckTimesContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= numTrucks; i++) {
+                // Generate random times
+                const loadingTime = Math.floor(Math.random() * 10) + 1; // Random loading time between 1-10
+                const weighingTime = Math.floor(Math.random() * 10) + 1; // Random weighing time between 1-10
+                const travelTime = Math.floor(Math.random() * 10) + 1; // Random travel time between 1-10
+
+                truckDetails[`T${i}`] = {
+                    loadingTime: loadingTime,
+                    weighingTime: weighingTime,
+                    travelTime: travelTime
+                };
+
+                const truckDiv = document.createElement('div');
+                truckDiv.innerHTML = `
+                    <strong>Truck T${i}</strong>
+                    <label for="loadingTimeT${i}">Loading Time:</label>
+                    <input type="number" id="loadingTimeT${i}" value="${loadingTime}" min="1" readonly>
+                    <label for="weighingTimeT${i}">Weighing Time:</label>
+                    <input type="number" id="weighingTimeT${i}" value="${weighingTime}" min="1" readonly>
+                    <label for="travelTimeT${i}">Travel Time:</label>
+                    <input type="number" id="travelTimeT${i}" value="${travelTime}" min="1" readonly>
+                `;
+                container.appendChild(truckDiv);
+            }
+        };
+
+        document.getElementById('startButton').onclick = function() {
+            const numTrucks = parseInt(document.getElementById('numTrucks').value);
+            numLoaders = parseInt(document.getElementById('numLoaders').value);
+            numScales = parseInt(document.getElementById('numScales').value);
+
+            loaderQueue = Array.from({ length: numTrucks }, (_, i) => `T${i + 1}`);
+            clock = 0;
+            loaderBusy = [];
+            weighingQueue = [];
+            weighingTruck = null;
+            futureEventList = [];
+            BL = 0;
+            BS = 0;
+            loaderBusyTime = 0;  // Reset loader busy time
+            scaleBusyTime = 0;   // Reset scale busy time
+
+            document.getElementById('simulationBody').innerHTML = ''; // Clear previous simulation
+
+            startSimulation();
+        };
+
+        function startSimulation() {
+            addRow("Simulation started.");
+            setInterval(runSimulationStep, 1000);  // Update every second
+        }
+
+        function runSimulationStep() {
+            processFutureEvents();
+
+            while (loaderQueue.length > 0 && loaderBusy.length < numLoaders) {
+                let truck = loaderQueue.shift();
+                loaderBusy.push(truck);
+                BL++;
+                const loadingTime = truckDetails[truck].loadingTime;
+                scheduleFutureEvent(clock + loadingTime, 'EL', truck);
+                addRow(`${truck} started loading for ${loadingTime} time units.`);
+            }
+
+            if (weighingTruck === null && weighingQueue.length > 0 && BS < numScales) {
+                weighingTruck = weighingQueue.shift();
+                BS++;
+                const weighingTime = truckDetails[weighingTruck].weighingTime;
+                scheduleFutureEvent(clock + weighingTime, 'EW', weighingTruck);
+                addRow(`${weighingTruck} started weighing for ${weighingTime} time units.`);
+            }
+
+            // Update loader busy time based on the number of busy loaders
+            loaderBusyTime += loaderBusy.length;  // Add time for each busy loader
+            scaleBusyTime += BS;  // Add time if scale is busy
+
+            // Display updated loader and scale busy times
+            document.getElementById('loaderBusyTime').textContent = loaderBusyTime;
+            document.getElementById('scaleBusyTime').textContent = scaleBusyTime;
+
+            clock++;
+        }
+
+        function processFutureEvents() {
+            while (futureEventList.length > 0 && futureEventList[0].eventTime <= clock) {
+                let event = futureEventList.shift();
+
+                if (event.eventType === 'EL') {
+                    loaderBusy = loaderBusy.filter(truck => truck !== event.truckId);
+                    BL--;
+
+                    if (BS < numScales) {
+                        weighingTruck = event.truckId;
+                        BS++;
+                        const weighingTime = truckDetails[weighingTruck].weighingTime;
+                        scheduleFutureEvent(clock + weighingTime, 'EW', weighingTruck);
+                        addRow(`${event.truckId} moved directly to scale for ${weighingTime} time units.`);
+                    } else {
+                        weighingQueue.push(event.truckId);
+                        addRow(`${event.truckId} moved to weighing queue.`);
+                    }
+                } else if (event.eventType === 'EW') {
+                    addRow(`${event.truckId} finished weighing.`);
+                    weighingTruck = null;
+                    BS--;
+
+                    if (weighingQueue.length > 0) {
+                        weighingTruck = weighingQueue.shift();
+                        BS++;
+                        const weighingTime = truckDetails[weighingTruck].weighingTime;
+                        scheduleFutureEvent(clock + weighingTime, 'EW', weighingTruck);
+                        addRow(`${weighingTruck} moved to scale for ${weighingTime} time units.`);
+                    }
+                }
+            }
+        }
+
+        function scheduleFutureEvent(time, type, truckId) {
+            futureEventList.push({ eventTime: time, eventType: type, truckId: truckId });
+            futureEventList.sort((a, b) => a.eventTime - b.eventTime);
+        }
+
+        function addRow(eventDescription) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${clock}</td>
+                <td>${eventDescription}</td>
+                <td>${loaderQueue.join(', ')}</td>
+                <td>${loaderBusy.join(', ')}</td>
+                <td>${weighingQueue.join(', ')}</td>
+                <td>${weighingTruck || ''}</td>
+                <td>${BL}</td>
+                <td>${BS}</td>
+                <td>${futureEventList.map(e => `${e.eventType}(${e.truckId}) @ ${e.eventTime}`).join(', ')}</td>
+            `;
+            document.getElementById('simulationBody').appendChild(row);
+        }
+    </script>
+</body>
+</html>
